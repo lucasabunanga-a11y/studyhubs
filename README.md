@@ -1,2 +1,2 @@
 # studyhubs
-a study website 
+a study website
