@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fieldnote — Study Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    box-sizing: border-box;
+    --paper: #EEF2ED;
+    --paper-2: #E4EAE2;
+    --ink: #26322C;
+    --ink-soft: #5B655F;
+    --sage: #5B7B6F;
+    --sage-deep: #3F5A50;
+    --clay: #9C7A5E;
+    --gold: #C9A66B;
+    --surface: #FBFAF6;
+    --line: #D8DED4;
+    --danger: #A8543F;
+    --radius-card: 16px;
+    --radius-pill: 999px;
+    --radius-chip: 7px;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #1B211D;
+      --paper-2: #212820;
+      --ink: #ECEFEA;
+      --ink-soft: #A9B3AC;
+      --sage: #8FB0A2;
+      --sage-deep: #6E9384;
+      --clay: #C6A182;
+      --gold: #D9BC85;
+      --surface: #232B25;
+      --line: #384039;
+      --danger: #D98A76;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #1B211D;
+    --paper-2: #212820;
+    --ink: #ECEFEA;
+    --ink-soft: #A9B3AC;
+    --sage: #8FB0A2;
+    --sage-deep: #6E9384;
+    --clay: #C6A182;
+    --gold: #D9BC85;
+    --surface: #232B25;
+    --line: #384039;
+    --danger: #D98A76;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  h1, h2, h3, .display {
+    font-family: 'Fraunces', Georgia, serif;
+    color: var(--ink);
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  p { margin: 0; }
+  button { font-family: inherit; }
+  a { color: inherit; }
+  ::selection { background: var(--gold); color: var(--sage-deep); }
+
+  #app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--paper);
+  }
+
+  /* ---------- Auth screens ---------- */
+  .auth-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 32px 28px calc(28px + env(safe-area-inset-bottom, 0px));
+    min-height: 100vh;
+  }
+  .auth-mark {
+    width: 46px; height: 46px;
+    border-radius: 12px;
+    background: linear-gradient(155deg, var(--sage) 0%, var(--gold) 100%);
+    margin-bottom: 22px;
+    position: relative;
+  }
+  .auth-mark::after {
+    content: "";
+    position: absolute; inset: 9px;
+    border-radius: 6px;
+    background: var(--paper);
+  }
+  .auth-title {
+    font-size: 2rem;
+    line-height: 1.15;
+    font-weight: 600;
+    max-width: 12ch;
+  }
+  .auth-sub {
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    margin-top: 10px;
+    max-width: 34ch;
+    line-height: 1.5;
+  }
+  .auth-tabs {
+    display: flex;
+    gap: 4px;
+    margin: 28px 0 20px;
+    background: var(--paper-2);
+    padding: 4px;
+    border-radius: var(--radius-pill);
+    width: fit-content;
+  }
+  .auth-tab {
+    border: none;
+    background: transparent;
+    padding: 8px 18px;
+    border-radius: var(--radius-pill);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .auth-tab[aria-selected="true"] {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .field {
+    margin-bottom: 14px;
+  }
+  .field label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 11px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 0.96rem;
+    font-family: inherit;
+    outline: none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--sage);
+    box-shadow: 0 0 0 3px rgba(91,123,111,0.18);
+  }
+  .field-row { display: flex; gap: 10px; }
+  .field-row .field { flex: 1; }
+  .btn-primary {
+    width: 100%;
+    padding: 13px 18px;
+    border-radius: var(--radius-pill);
+    border: none;
+    background: var(--sage-deep);
+    color: var(--surface);
+    font-weight: 600;
+    font-size: 0.98rem;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-ghost {
+    width: 100%;
+    padding: 12px 18px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+  .form-note {
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    margin-top: 14px;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .form-error {
+    background: rgba(168,84,63,0.12);
+    color: var(--danger);
+    padding: 10px 13px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    margin-bottom: 14px;
+  }
+
+  /* ---------- Shell ---------- */
+  .shell-header {
+    padding: calc(18px + env(safe-area-inset-top, 0px)) 20px 16px;
+    background: var(--paper);
+  }
+  .shell-header .eyebrow {
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+  }
+  .shell-header h1 { font-size: 1.5rem; margin-top: 2px; }
+
+  .tabpanel {
+    flex: 1;
+    padding: 4px 20px 100px;
+    animation: fade-in 0.25s ease;
+  }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+  .bottom-nav {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    width: calc(100% - 32px);
+    max-width: 448px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 6px;
+    box-shadow: 0 8px 24px rgba(38,50,44,0.10);
+  }
+  .nav-btn {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-radius: 12px;
+  }
+  .nav-btn.active { color: var(--sage-deep); }
+  .nav-btn svg { width: 21px; height: 21px; }
+  .nav-btn span { font-size: 0.66rem; font-weight: 600; }
+
+  /* ---------- Home ---------- */
+  .ring-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    padding: 22px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-top: 6px;
+  }
+  .ring-wrap { position: relative; width: 96px; height: 96px; flex-shrink: 0; }
+  .ring-wrap svg { transform: rotate(-90deg); }
+  .ring-label {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .ring-label b { font-size: 1.25rem; font-family: 'Fraunces', serif; }
+  .ring-label small { font-size: 0.65rem; color: var(--ink-soft); }
+  .ring-copy h3 { font-size: 1.02rem; margin-bottom: 4px; }
+  .ring-copy p { font-size: 0.84rem; color: var(--ink-soft); line-height: 1.45; }
+
+  .section-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 26px 0 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .section-title button {
+    background: none; border: none; color: var(--sage-deep);
+    font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit;
+  }
+
+  .stat-row { display: flex; gap: 10px; }
+  .stat-chip {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 13px;
+    padding: 13px 14px;
+  }
+  .stat-chip b { display: block; font-family: 'Fraunces', serif; font-size: 1.3rem; }
+  .stat-chip span { font-size: 0.72rem; color: var(--ink-soft); }
+
+  /* ---------- Lists: lectures / assignments ---------- */
+  .list-item {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 15px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 13px;
+    align-items: center;
+    cursor: pointer;
+  }
+  .li-icon {
+    width: 42px; height: 42px;
+    border-radius: 11px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--surface);
+  }
+  .li-body { flex: 1; min-width: 0; }
+  .li-title { font-size: 0.93rem; font-weight: 600; margin-bottom: 2px; }
+  .li-meta { font-size: 0.76rem; color: var(--ink-soft); }
+  .li-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: var(--radius-chip);
+    flex-shrink: 0;
+  }
+  .badge-watched { background: rgba(91,123,111,0.15); color: var(--sage-deep); }
+  .badge-new { background: rgba(201,166,107,0.22); color: var(--clay); }
+  .badge-pending { background: rgba(201,166,107,0.22); color: var(--clay); }
+  .badge-submitted { background: rgba(91,123,111,0.15); color: var(--sage-deep); }
+  .badge-late { background: rgba(168,84,63,0.14); color: var(--danger); }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--ink-soft);
+  }
+  .empty-state p { font-size: 0.88rem; margin-top: 6px; }
+
+  /* ---------- Attendance calendar ---------- */
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .cal-dow {
+    text-align: center;
+    font-size: 0.65rem;
+    color: var(--ink-soft);
+    font-weight: 600;
+    padding-bottom: 4px;
+  }
+  .cal-cell {
+    aspect-ratio: 1;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+  }
+  .cal-cell.present { background: var(--sage); border-color: var(--sage); color: var(--surface); font-weight: 700; }
+  .cal-cell.today { box-shadow: 0 0 0 2px var(--gold) inset; }
+  .cal-cell.blank { background: transparent; border: none; }
+
+  .mark-btn {
+    margin-top: 16px;
+    width: 100%;
+    padding: 13px;
+    border-radius: 13px;
+    border: none;
+    background: var(--sage-deep);
+    color: var(--surface);
+    font-weight: 600;
+    font-size: 0.92rem;
+    cursor: pointer;
+  }
+  .mark-btn[disabled] {
+    background: var(--paper-2);
+    color: var(--ink-soft);
+    cursor: default;
+  }
+
+  /* ---------- Profile ---------- */
+  .profile-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+    padding: 20px;
+    text-align: center;
+    margin-top: 6px;
+  }
+  .avatar {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    margin: 0 auto 12px;
+    background: linear-gradient(155deg, var(--sage) 0%, var(--gold) 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--surface);
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+  .profile-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 13px 0;
+    border-top: 1px solid var(--line);
+    font-size: 0.86rem;
+  }
+  .profile-row span:first-child { color: var(--ink-soft); }
+  .profile-row span:last-child { font-weight: 600; }
+
+  /* ---------- Modal / sheet ---------- */
+  .sheet-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(38,50,44,0.42);
+    display: flex; align-items: flex-end;
+    z-index: 40;
+    animation: fade-in 0.2s ease;
+  }
+  .sheet {
+    background: var(--paper);
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    border-radius: 22px 22px 0 0;
+    padding: 22px 22px calc(22px + env(safe-area-inset-bottom, 0px));
+    max-height: 86vh;
+    overflow-y: auto;
+  }
+  .sheet-handle {
+    width: 38px; height: 4px;
+    background: var(--line);
+    border-radius: 4px;
+    margin: 0 auto 16px;
+  }
+  .sheet h2 { font-size: 1.25rem; margin-bottom: 4px; }
+  .sheet .sheet-meta { font-size: 0.82rem; color: var(--ink-soft); margin-bottom: 18px; }
+  .sheet-close {
+    position: absolute; top: 16px; right: 16px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--ink-soft);
+  }
+
+  .video-stage {
+    background: var(--ink);
+    border-radius: 14px;
+    height: 180px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .video-stage .wave { display: flex; gap: 4px; align-items: flex-end; height: 46px; }
+  .video-stage .wave i {
+    width: 4px; border-radius: 2px;
+    background: var(--gold);
+    animation: wave 1.1s ease-in-out infinite;
+  }
+  @keyframes wave { 0%,100% { height: 10px; } 50% { height: 40px; } }
+  .video-progress-track {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 4px; background: rgba(255,255,255,0.18);
+  }
+  .video-progress-fill {
+    height: 100%; background: var(--gold); width: 0%;
+    transition: width 0.2s linear;
+  }
+  .video-controls { display: flex; gap: 10px; }
+  .video-controls button { flex: 1; }
+
+  .toast {
+    position: fixed;
+    bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    left: 50%; transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 11px 20px;
+    border-radius: var(--radius-pill);
+    font-size: 0.84rem;
+    z-index: 60;
+    animation: toast-in 0.25s ease;
+    max-width: 90%;
+    text-align: center;
+  }
+  @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+  .reduce-motion, [data-reduced="true"] * { animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ storage helpers ============ */
+  var LS_USERS = "fieldnote_users";
+  var LS_SESSION = "fieldnote_session";
+
+  function safeGet(key, fallback){
+    try {
+      var raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch(e){ return fallback; }
+  }
+  function safeSet(key, val){
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){}
+  }
+  function getUsers(){ return safeGet(LS_USERS, {}); }
+  function saveUsers(u){ safeSet(LS_USERS, u); }
+  function dataKey(email){ return "fieldnote_data_" + email; }
+  function getUserData(email){
+    return safeGet(dataKey(email), null);
+  }
+  function saveUserData(email, d){ safeSet(dataKey(email), d); }
+
+  function simpleHash(str){
+    // Not cryptographic — this is a client-only demo with no server.
+    var h = 0;
+    for (var i=0; i<str.length; i++){ h = ((h<<5)-h) + str.charCodeAt(i); h |= 0; }
+    return "h" + h;
+  }
+
+  function todayStr(){
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+  }
+  function addDays(base, n){
+    var d = new Date(base);
+    d.setDate(d.getDate()+n);
+    return d;
+  }
+  function fmtDate(d){
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  }
+  function initials(name){
+    return name.trim().split(/\s+/).slice(0,2).map(function(w){return w[0]||"";}).join("").toUpperCase();
+  }
+
+  /* ============ seed content (shared across all students) ============ */
+  var LECTURES = [
+    { id: "l1", title: "Cell structure & membranes", subject: "Biology", duration: "18 min", color: "#5B7B6F" },
+    { id: "l2", title: "Limits and continuity", subject: "Mathematics", duration: "24 min", color: "#9C7A5E" },
+    { id: "l3", title: "The French Revolution, part I", subject: "History", duration: "21 min", color: "#5B7B6F" },
+    { id: "l4", title: "Thermodynamics: first law", subject: "Physics", duration: "16 min", color: "#9C7A5E" },
+    { id: "l5", title: "Sentence structure & syntax trees", subject: "Linguistics", duration: "14 min", color: "#5B7B6F" },
+    { id: "l6", title: "Intro to relational databases", subject: "Computer Science", duration: "27 min", color: "#9C7A5E" }
+  ];
+
+  function seedAssignments(){
+    var today = new Date();
+    return [
+      { id: "a1", title: "Cell membrane lab writeup", subject: "Biology", due: addDays(today, 2).toISOString(), status: "pending", note: "" },
+      { id: "a2", title: "Problem set 4 — limits", subject: "Mathematics", due: addDays(today, 4).toISOString(), status: "pending", note: "" },
+      { id: "a3", title: "Primary source reading response", subject: "History", due: addDays(today, -1).toISOString(), status: "pending", note: "" },
+      { id: "a4", title: "Thermo worksheet", subject: "Physics", due: addDays(today, 6).toISOString(), status: "pending", note: "" }
+    ];
+  }
+
+  /* ============ app state ============ */
+  var state = {
+    screen: "loading",  // loading | auth | app
+    authTab: "login",
+    tab: "home",
+    session: null,       // email
+    user: null,
+    data: null,
+    authError: "",
+    sheet: null,         // { type: 'lecture'|'assignment', item }
+    toast: null
+  };
+
+  var root = document.getElementById("app");
+
+  function showToast(msg){
+    state.toast = msg;
+    render();
+    setTimeout(function(){ state.toast = null; renderToastOnly(); }, 2200);
+  }
+  function renderToastOnly(){
+    var existing = document.querySelector(".toast");
+    if (existing) existing.remove();
+  }
+
+  /* ============ icons (inline svg, stroke-based, calm) ============ */
+  var ICONS = {
+    home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/></svg>',
+    play: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m10 8.5 6 3.5-6 3.5z"/></svg>',
+    doc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-10"/></svg>',
+    user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.6-3.6 5-5.5 7.5-5.5s5.9 1.9 7.5 5.5"/></svg>',
+    close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>',
+    pause: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 5v14M16 5v14"/></svg>'
+  };
+
+  /* ============ render dispatcher ============ */
+  function render(){
+    if (state.screen === "auth") return renderAuth();
+    if (state.screen === "app") return renderApp();
+    root.innerHTML = "";
+  }
+
+  /* ============ AUTH SCREEN ============ */
+  function renderAuth(){
+    var isLogin = state.authTab === "login";
+    root.innerHTML =
+      '<div class="auth-wrap">' +
+        '<div class="auth-mark"></div>' +
+        '<h1 class="auth-title">Fieldnote</h1>' +
+        '<p class="auth-sub">One quiet place for lectures, assignments and attendance — built to feel calm, not chaotic.</p>' +
+        '<div class="auth-tabs" role="tablist">' +
+          '<button class="auth-tab" data-authtab="login" role="tab" aria-selected="' + isLogin + '">Log in</button>' +
+          '<button class="auth-tab" data-authtab="register" role="tab" aria-selected="' + (!isLogin) + '">Register</button>' +
+        '</div>' +
+        (state.authError ? '<div class="form-error">' + state.authError + '</div>' : '') +
+        (isLogin ? renderLoginForm() : renderRegisterForm()) +
+      '</div>';
+    bindAuthEvents();
+  }
+
+  function renderLoginForm(){
+    return (
+      '<form id="loginForm">' +
+        '<div class="field"><label for="li-email">Email</label><input id="li-email" type="email" required placeholder="you@school.edu" autocomplete="email"></div>' +
+        '<div class="field"><label for="li-pass">Password</label><input id="li-pass" type="password" required placeholder="••••••••" autocomplete="current-password"></div>' +
+        '<button type="submit" class="btn-primary">Log in</button>' +
+        '<p class="form-note">First time here? Switch to Register above to create your student profile.</p>' +
+      '</form>'
+    );
+  }
+
+  function renderRegisterForm(){
+    return (
+      '<form id="registerForm">' +
+        '<div class="field"><label for="rg-name">Full name</label><input id="rg-name" required placeholder="Amara Obi" autocomplete="name"></div>' +
+        '<div class="field-row">' +
+          '<div class="field"><label for="rg-id">Student ID</label><input id="rg-id" required placeholder="STU-0142"></div>' +
+          '<div class="field"><label for="rg-dept">Department</label><select id="rg-dept">' +
+            '<option>Biology</option><option>Mathematics</option><option>History</option><option>Physics</option><option>Linguistics</option><option>Computer Science</option>' +
+          '</select></div>' +
+        '</div>' +
+        '<div class="field"><label for="rg-email">Email</label><input id="rg-email" type="email" required placeholder="you@school.edu" autocomplete="email"></div>' +
+        '<div class="field"><label for="rg-pass">Password</label><input id="rg-pass" type="password" required minlength="4" placeholder="At least 4 characters" autocomplete="new-password"></div>' +
+        '<button type="submit" class="btn-primary">Create my profile</button>' +
+        '<p class="form-note">Your details stay on this device only — this is a self-contained demo with no external server.</p>' +
+      '</form>'
+    );
+  }
+
+  function bindAuthEvents(){
+    var tabs = root.querySelectorAll(".auth-tab");
+    tabs.forEach(function(t){
+      t.addEventListener("click", function(){
+        state.authTab = t.getAttribute("data-authtab");
+        state.authError = "";
+        renderAuth();
+      });
+    });
+    var loginForm = document.getElementById("loginForm");
+    if (loginForm){
+      loginForm.addEventListener("submit", function(e){
+        e.preventDefault();
+        var email = document.getElementById("li-email").value.trim().toLowerCase();
+        var pass = document.getElementById("li-pass").value;
+        var users = getUsers();
+        var u = users[email];
+        if (!u || u.passHash !== simpleHash(pass)){
+          state.authError = "That email and password don't match a profile on this device.";
+          renderAuth();
+          return;
+        }
+        logIn(email);
+      });
+    }
+    var regForm = document.getElementById("registerForm");
+    if (regForm){
+      regForm.addEventListener("submit", function(e){
+        e.preventDefault();
+        var name = document.getElementById("rg-name").value.trim();
+        var sid = document.getElementById("rg-id").value.trim();
+        var dept = document.getElementById("rg-dept").value;
+        var email = document.getElementById("rg-email").value.trim().toLowerCase();
+        var pass = document.getElementById("rg-pass").value;
+        var users = getUsers();
+        if (users[email]){
+          state.authError = "A profile with that email already exists on this device — try logging in instead.";
+          renderAuth();
+          return;
+        }
+        users[email] = { name: name, studentId: sid, department: dept, email: email, passHash: simpleHash(pass), createdAt: new Date().toISOString() };
+        saveUsers(users);
+        saveUserData(email, { attendance: {}, assignments: seedAssignments(), watched: {} });
+        logIn(email);
+      });
+    }
+  }
+
+  function logIn(email){
+    var users = getUsers();
+    state.user = users[email];
+    state.session = email;
+    state.data = getUserData(email) || { attendance: {}, assignments: seedAssignments(), watched: {} };
+    safeSet(LS_SESSION, email);
+    state.screen = "app";
+    state.tab = "home";
+    state.authError = "";
+    render();
+  }
+
+  function logOut(){
+    localStorage.removeItem(LS_SESSION);
+    state.screen = "auth";
+    state.authTab = "login";
+    state.session = null;
+    state.user = null;
+    state.data = null;
+    render();
+  }
+
+  /* ============ APP SHELL ============ */
+  function renderApp(){
+    var headerTitle = { home: "Fieldnote", lectures: "Lectures", assignments: "Assignments", attendance: "Attendance", profile: "Profile" }[state.tab];
+    var eyebrow = { home: greeting(), lectures: "Everything assigned to you", assignments: "Track what's due", attendance: "Your presence, over time", profile: "Your details" }[state.tab];
+
+    root.innerHTML =
+      '<div class="shell-header"><p class="eyebrow">' + eyebrow + '</p><h1>' + headerTitle + '</h1></div>' +
+      '<div class="tabpanel" id="tabpanel"></div>' +
+      renderBottomNav() +
+      (state.sheet ? renderSheet() : "") +
+      (state.toast ? '<div class="toast">' + state.toast + '</div>' : "");
+
+    var panel = document.getElementById("tabpanel");
+    if (state.tab === "home") panel.innerHTML = renderHome();
+    else if (state.tab === "lectures") panel.innerHTML = renderLectures();
+    else if (state.tab === "assignments") panel.innerHTML = renderAssignments();
+    else if (state.tab === "attendance") panel.innerHTML = renderAttendance();
+    else if (state.tab === "profile") panel.innerHTML = renderProfile();
+
+    bindAppEvents();
+  }
+
+  function greeting(){
+    var h = new Date().getHours();
+    var name = state.user.name.split(" ")[0];
+    var g = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+    return g + ", " + name;
+  }
+
+  function renderBottomNav(){
+    var items = [
+      { id: "home", label: "Home", icon: ICONS.home },
+      { id: "lectures", label: "Lectures", icon: ICONS.play },
+      { id: "assignments", label: "Work", icon: ICONS.doc },
+      { id: "attendance", label: "Attendance", icon: ICONS.check },
+      { id: "profile", label: "Profile", icon: ICONS.user }
+    ];
+    return '<nav class="bottom-nav">' + items.map(function(it){
+      return '<button class="nav-btn' + (state.tab===it.id?' active':'') + '" data-tab="' + it.id + '">' + it.icon + '<span>' + it.label + '</span></button>';
+    }).join("") + '</nav>';
+  }
+
+  /* ---- Home ---- */
+  function weekAttendancePct(){
+    var count = 0;
+    for (var i=0;i<7;i++){
+      var d = addDays(new Date(), -i);
+      var key = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+      if (state.data.attendance[key]) count++;
+    }
+    return Math.round((count/7)*100);
+  }
+
+  function renderHome(){
+    var pct = weekAttendancePct();
+    var r = 40, c = 2*Math.PI*r;
+    var offset = c - (pct/100)*c;
+    var pending = state.data.assignments.filter(function(a){ return a.status !== "submitted"; }).length;
+    var watchedCount = Object.keys(state.data.watched).length;
+    var nextLecture = LECTURES.find(function(l){ return !state.data.watched[l.id]; }) || LECTURES[0];
+
+    var html = '';
+    html += '<div class="ring-card">' +
+      '<div class="ring-wrap"><svg width="96" height="96" viewBox="0 0 96 96">' +
+        '<circle cx="48" cy="48" r="'+r+'" fill="none" stroke="var(--line)" stroke-width="8"/>' +
+        '<circle cx="48" cy="48" r="'+r+'" fill="none" stroke="url(#gradRing)" stroke-width="8" stroke-linecap="round" stroke-dasharray="'+c+'" stroke-dashoffset="'+offset+'" style="transition: stroke-dashoffset 1s ease"/>' +
+        '<defs><linearGradient id="gradRing" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="var(--sage)"/><stop offset="100%" stop-color="var(--gold)"/></linearGradient></defs>' +
+      '</svg><div class="ring-label"><b>' + pct + '%</b><small>this week</small></div></div>' +
+      '<div class="ring-copy"><h3>You\'re showing up</h3><p>Attendance across the last 7 days. Keep the streak alive by marking today from the Attendance tab.</p></div>' +
+    '</div>';
+
+    html += '<div class="stat-row" style="margin-top:14px;">' +
+      '<div class="stat-chip"><b>' + pending + '</b><span>Assignments due</span></div>' +
+      '<div class="stat-chip"><b>' + watchedCount + '/' + LECTURES.length + '</b><span>Lectures watched</span></div>' +
+    '</div>';
+
+    html += '<div class="section-title"><span>Continue watching</span><button data-tab="lectures">See all</button></div>';
+    html += lectureItem(nextLecture);
+
+    var nextDue = state.data.assignments.filter(function(a){return a.status!=="submitted";}).sort(function(a,b){ return new Date(a.due)-new Date(b.due); })[0];
+    html += '<div class="section-title"><span>Coming up</span><button data-tab="assignments">See all</button></div>';
+    html += nextDue ? assignmentItem(nextDue) : '<div class="empty-state">' + ICONS.check + '<p>Nothing outstanding — nicely done.</p></div>';
+
+    return html;
+  }
+
+  /* ---- Lectures ---- */
+  function lectureItem(l){
+    var watched = !!state.data.watched[l.id];
+    return '<div class="list-item" data-open-lecture="' + l.id + '">' +
+      '<div class="li-icon" style="background:' + l.color + '">' + ICONS.play + '</div>' +
+      '<div class="li-body"><div class="li-title">' + l.title + '</div><div class="li-meta">' + l.subject + ' · ' + l.duration + '</div></div>' +
+      '<span class="li-badge ' + (watched ? 'badge-watched' : 'badge-new') + '">' + (watched ? 'Watched' : 'New') + '</span>' +
+    '</div>';
+  }
+  function renderLectures(){
+    return LECTURES.map(lectureItem).join("");
+  }
+
+  /* ---- Assignments ---- */
+  function isLate(a){ return a.status !== "submitted" && new Date(a.due) < new Date(); }
+  function assignmentItem(a){
+    var badge = a.status === "submitted" ? "Submitted" : (isLate(a) ? "Late" : "Pending");
+    var badgeClass = a.status === "submitted" ? "badge-submitted" : (isLate(a) ? "badge-late" : "badge-pending");
+    return '<div class="list-item" data-open-assignment="' + a.id + '">' +
+      '<div class="li-icon" style="background:var(--clay)">' + ICONS.doc + '</div>' +
+      '<div class="li-body"><div class="li-title">' + a.title + '</div><div class="li-meta">' + a.subject + ' · Due ' + fmtDate(new Date(a.due)) + '</div></div>' +
+      '<span class="li-badge ' + badgeClass + '">' + badge + '</span>' +
+    '</div>';
+  }
+  function renderAssignments(){
+    var sorted = state.data.assignments.slice().sort(function(a,b){ return new Date(a.due)-new Date(b.due); });
+    if (!sorted.length) return '<div class="empty-state"><p>No assignments yet.</p></div>';
+    return sorted.map(assignmentItem).join("");
+  }
+
+  /* ---- Attendance ---- */
+  function renderAttendance(){
+    var today = new Date();
+    var startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    var firstWeekday = startOfMonth.getDay();
+    var daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+    var dows = ["S","M","T","W","T","F","S"];
+    var html = '<div class="cal-grid">' + dows.map(function(d){ return '<div class="cal-dow">'+d+'</div>'; }).join("");
+    for (var i=0;i<firstWeekday;i++) html += '<div class="cal-cell blank"></div>';
+    for (var day=1; day<=daysInMonth; day++){
+      var d = new Date(today.getFullYear(), today.getMonth(), day);
+      var key = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+      var present = !!state.data.attendance[key];
+      var isToday = key === todayStr();
+      html += '<div class="cal-cell' + (present?' present':'') + (isToday?' today':'') + '">' + day + '</div>';
+    }
+    html += '</div>';
+
+    var markedToday = !!state.data.attendance[todayStr()];
+    html += '<button class="mark-btn" id="markAttendance" ' + (markedToday ? 'disabled' : '') + '>' +
+      (markedToday ? "Today's attendance is marked" : "Mark today's attendance") + '</button>';
+    return html;
+  }
+
+  /* ---- Profile ---- */
+  function renderProfile(){
+    var u = state.user;
+    return '<div class="profile-card">' +
+      '<div class="avatar">' + initials(u.name) + '</div>' +
+      '<h3>' + u.name + '</h3>' +
+      '<p style="color:var(--ink-soft); font-size:0.85rem; margin-top:4px;">' + u.department + '</p>' +
+      '<div class="profile-row"><span>Student ID</span><span>' + u.studentId + '</span></div>' +
+      '<div class="profile-row"><span>Email</span><span>' + u.email + '</span></div>' +
+      '<div class="profile-row"><span>Joined</span><span>' + fmtDate(new Date(u.createdAt)) + '</span></div>' +
+      '<button class="btn-ghost" id="logoutBtn" style="margin-top:18px;">Log out</button>' +
+    '</div>';
+  }
+
+  /* ---- Sheets (lecture player / assignment submit) ---- */
+  function renderSheet(){
+    if (state.sheet.type === "lecture") return renderLectureSheet(state.sheet.item);
+    if (state.sheet.type === "assignment") return renderAssignmentSheet(state.sheet.item);
+    return "";
+  }
+
+  function renderLectureSheet(l){
+    var watched = !!state.data.watched[l.id];
+    return '<div class="sheet-backdrop" id="sheetBackdrop"><div class="sheet" style="position:relative;">' +
+      '<button class="sheet-close" id="sheetClose">' + ICONS.close + '</button>' +
+      '<div class="sheet-handle"></div>' +
+      '<h2>' + l.title + '</h2>' +
+      '<p class="sheet-meta">' + l.subject + ' · ' + l.duration + '</p>' +
+      '<div class="video-stage" id="videoStage">' +
+        '<div class="wave" id="wave">' + Array.from({length:9}).map(function(_,i){ return '<i style="animation-delay:'+(i*0.09)+'s"></i>'; }).join("") + '</div>' +
+        '<div class="video-progress-track"><div class="video-progress-fill" id="progressFill"></div></div>' +
+      '</div>' +
+      '<div class="video-controls">' +
+        '<button class="btn-ghost" id="playPauseBtn">' + (watched ? 'Watch again' : 'Play lecture') + '</button>' +
+        '<button class="btn-primary" id="markWatchedBtn" style="flex:1;">' + (watched ? 'Watched ✓' : 'Mark as watched') + '</button>' +
+      '</div>' +
+    '</div></div>';
+  }
+
+  function renderAssignmentSheet(a){
+    var submitted = a.status === "submitted";
+    return '<div class="sheet-backdrop" id="sheetBackdrop"><div class="sheet" style="position:relative;">' +
+      '<button class="sheet-close" id="sheetClose">' + ICONS.close + '</button>' +
+      '<div class="sheet-handle"></div>' +
+      '<h2>' + a.title + '</h2>' +
+      '<p class="sheet-meta">' + a.subject + ' · Due ' + fmtDate(new Date(a.due)) + (isLate(a) ? ' · overdue' : '') + '</p>' +
+      (submitted ?
+        '<div class="form-note" style="text-align:left; background:var(--surface); border:1px solid var(--line); padding:14px; border-radius:12px;">' +
+          '<strong style="color:var(--sage-deep);">Submitted</strong><br>' + (a.note ? escapeHtml(a.note) : '<em>No notes added.</em>') +
+        '</div>'
+        :
+        '<div class="field"><label for="submissionNote">A note or link for your submission</label><textarea id="submissionNote" rows="4" placeholder="Describe your work, or paste a link to it..."></textarea></div>' +
+        '<div class="field"><label for="submissionFile">Attach a file (optional)</label><input id="submissionFile" type="file"></div>' +
+        '<button class="btn-primary" id="submitAssignmentBtn">Submit assignment</button>'
+      ) +
+    '</div></div>';
+  }
+
+  function escapeHtml(s){
+    var d = document.createElement("div");
+    d.innerText = s;
+    return d.innerHTML;
+  }
+
+  /* ============ event binding ============ */
+  var videoTimer = null;
+
+  function bindAppEvents(){
+    root.querySelectorAll("[data-tab]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        state.tab = btn.getAttribute("data-tab");
+        state.sheet = null;
+        renderApp();
+      });
+    });
+
+    root.querySelectorAll("[data-open-lecture]").forEach(function(el){
+      el.addEventListener("click", function(){
+        var id = el.getAttribute("data-open-lecture");
+        var lec = LECTURES.find(function(l){ return l.id === id; });
+        state.sheet = { type: "lecture", item: lec };
+        renderApp();
+      });
+    });
+
+    root.querySelectorAll("[data-open-assignment]").forEach(function(el){
+      el.addEventListener("click", function(){
+        var id = el.getAttribute("data-open-assignment");
+        var a = state.data.assignments.find(function(x){ return x.id === id; });
+        state.sheet = { type: "assignment", item: a };
+        renderApp();
+      });
+    });
+
+    var backdrop = document.getElementById("sheetBackdrop");
+    if (backdrop){
+      backdrop.addEventListener("click", function(e){
+        if (e.target === backdrop) closeSheet();
+      });
+    }
+    var closeBtn = document.getElementById("sheetClose");
+    if (closeBtn) closeBtn.addEventListener("click", closeSheet);
+
+    var markAtt = document.getElementById("markAttendance");
+    if (markAtt) markAtt.addEventListener("click", function(){
+      state.data.attendance[todayStr()] = true;
+      saveUserData(state.session, state.data);
+      renderApp();
+      showToast("Attendance marked for today");
+    });
+
+    var logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) logoutBtn.addEventListener("click", logOut);
+
+    var playPauseBtn = document.getElementById("playPauseBtn");
+    if (playPauseBtn) playPauseBtn.addEventListener("click", function(){
+      var fill = document.getElementById("progressFill");
+      var wave = document.getElementById("wave");
+      if (videoTimer){
+        clearInterval(videoTimer);
+        videoTimer = null;
+        playPauseBtn.textContent = "Resume";
+        wave.style.opacity = "0.4";
+        return;
+      }
+      wave.style.opacity = "1";
+      playPauseBtn.textContent = "Pause";
+      var pct = parseFloat((fill.style.width||"0%"));
+      videoTimer = setInterval(function(){
+        pct += 2;
+        if (pct >= 100){
+          pct = 100;
+          clearInterval(videoTimer);
+          videoTimer = null;
+          playPauseBtn.textContent = "Watch again";
+          var id = state.sheet.item.id;
+          state.data.watched[id] = true;
+          saveUserData(state.session, state.data);
+        }
+        fill.style.width = pct + "%";
+      }, 90);
+    });
+
+    var markWatchedBtn = document.getElementById("markWatchedBtn");
+    if (markWatchedBtn) markWatchedBtn.addEventListener("click", function(){
+      var id = state.sheet.item.id;
+      state.data.watched[id] = true;
+      saveUserData(state.session, state.data);
+      closeSheet();
+      showToast("Marked as watched");
+    });
+
+    var submitBtn = document.getElementById("submitAssignmentBtn");
+    if (submitBtn) submitBtn.addEventListener("click", function(){
+      var note = document.getElementById("submissionNote").value.trim();
+      var fileInput = document.getElementById("submissionFile");
+      var fileName = fileInput && fileInput.files[0] ? fileInput.files[0].name : "";
+      var a = state.sheet.item;
+      a.status = "submitted";
+      a.note = note + (fileName ? (note ? " — " : "") + "Attached: " + fileName : "");
+      a.submittedAt = new Date().toISOString();
+      saveUserData(state.session, state.data);
+      closeSheet();
+      showToast("Assignment submitted");
+    });
+  }
+
+  function closeSheet(){
+    if (videoTimer){ clearInterval(videoTimer); videoTimer = null; }
+    state.sheet = null;
+    renderApp();
+  }
+
+  /* ============ boot ============ */
+  function boot(){
+    var session = safeGet(LS_SESSION, null);
+    if (session){
+      var users = getUsers();
+      if (users[session]){
+        state.session = session;
+        state.user = users[session];
+        state.data = getUserData(session) || { attendance: {}, assignments: seedAssignments(), watched: {} };
+        state.screen = "app";
+        state.tab = "home";
+        render();
+        return;
+      }
+    }
+    state.screen = "auth";
+    render();
+  }
+
+  boot();
+})();
+</script>
+</body>
+</html>
